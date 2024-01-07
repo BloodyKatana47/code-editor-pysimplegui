@@ -1,7 +1,9 @@
-import PySimpleGUI as sg
 from json import dump, load
+from typing import Union
 
-# import ctypes
+import PySimpleGUI as sg
+
+import ctypes
 
 # user32 = ctypes.windll.user32
 # width = user32.GetSystemMetrics(0)
@@ -14,16 +16,18 @@ element_size = (width // 2, height // 2)
 
 # print(sg.theme_list())
 
-def read_file(file_path):
+def read_file(path: str) -> str:
+    """Read a file and return its contents."""
     try:
-        with open(file_path, 'r', encoding='utf-8') as file:
+        with open(path, 'r', encoding='utf-8') as file:
             content = file.read()
             return content
     except Exception as e:
         return f'Error: {str(e)}'
 
 
-def edit_file(content, path):
+def edit_file(content: str, path: str) -> Union[int, str]:
+    """Edit a file and save it."""
     try:
         with open(path, 'w', encoding='utf-8') as file:
             new_content = file.write(content)
@@ -32,7 +36,8 @@ def edit_file(content, path):
         return f'Error: {str(e)}'
 
 
-def set_config(theme):
+def set_config(theme: str) -> Union[None, str]:
+    """Set the theme."""
     try:
         with open('config.json', 'w') as file:
             value = {'theme': theme}
@@ -41,7 +46,8 @@ def set_config(theme):
         return f'Error: {str(e)}'
 
 
-def get_config():
+def get_config() -> Union[dict, str]:
+    """Read config.json and return theme."""
     try:
         with open('config.json', 'r') as file:
             data = load(file)
@@ -51,6 +57,8 @@ def get_config():
 
 
 class MainWindow:
+    """Responsible for displaying main window content."""
+
     def __init__(self):
         # tab_layout = [
         #     [sg.Multiline(self.content, auto_size_text=True, expand_x=True, expand_y=True, key='-MULTI-')],
@@ -64,7 +72,7 @@ class MainWindow:
 
         config_theme = get_config()
 
-        self.theme = config_theme["theme"] if config_theme else 'BrightColors'
+        self.theme = config_theme.get('theme') if config_theme else 'BrightColors'
 
         sg.theme(self.theme)
 
@@ -75,11 +83,7 @@ class MainWindow:
         settings_layout = [
             [sg.Text(text='Настройки темы')],
             [sg.Listbox(sg.theme_list(), size=(25, 16), enable_events=True, key='-THEME-')],
-            [sg.Checkbox(
-                text='Автосохранение файла',
-                default=False,
-                key='-AUTOSAVE-',
-            )],
+            # [sg.Checkbox(text='Автосохранение файла', default=False, key='-AUTOSAVE-')],
         ]
 
         layout = [
@@ -115,7 +119,7 @@ class MainWindow:
 
             elif event == '-FILE-':
                 file_path = values['-FILE-']
-                content = read_file(file_path=file_path)
+                content = read_file(path=file_path)
                 self.content = content
                 self.file_path = file_path
 
@@ -140,7 +144,9 @@ class MainWindow:
 
 
 class FileViewWindow:
-    def __init__(self, content, file_path):
+    """Responsible for displaying the content of a file."""
+
+    def __init__(self, content: str, file_path: str):
         self.content = content
         self.file_path = file_path
         tab_layout = [
@@ -177,6 +183,7 @@ class FileViewWindow:
                 new_text = values['-MULTI-']
                 new_content = edit_file(path=self.file_path, content=str(new_text))
                 self.content = new_content
+                sg.Popup('Сохранено!')
 
         self.window.close()
 
