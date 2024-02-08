@@ -3,18 +3,10 @@ from typing import Union
 
 import PySimpleGUI as sg
 
-import ctypes
-
-# user32 = ctypes.windll.user32
-# width = user32.GetSystemMetrics(0)
-# height = user32.GetSystemMetrics(1)
-
 width = 1366
 height = 768
 element_size = (width // 2, height // 2)
 
-
-# print(sg.theme_list())
 
 def read_file(path: str) -> str:
     """Read a file and return its contents."""
@@ -46,30 +38,20 @@ def set_config(theme: str) -> Union[None, str]:
         return f'Error: {str(e)}'
 
 
-def get_config() -> Union[dict, str]:
+def get_config() -> Union[dict, bool]:
     """Read config.json and return theme."""
     try:
         with open('config.json', 'r') as file:
             data = load(file)
             return data
     except Exception as e:
-        return f'Error: {str(e)}'
+        return False
 
 
 class MainWindow:
     """Responsible for displaying main window content."""
 
     def __init__(self):
-        # tab_layout = [
-        #     [sg.Multiline(self.content, auto_size_text=True, expand_x=True, expand_y=True, key='-MULTI-')],
-        # ]
-        # layout = [
-        #     [sg.TabGroup(layout=[
-        #         [sg.Tab(title=f'{self.file_path.split("/")[-1]}', layout=tab_layout)],
-        #     ], expand_y=True, expand_x=True)],
-        #     [sg.Button(button_text='Назад', key='-BACK-', enable_events=True)],
-        # ]
-
         config_theme = get_config()
 
         self.theme = config_theme.get('theme') if config_theme else 'BrightColors'
@@ -83,7 +65,6 @@ class MainWindow:
         settings_layout = [
             [sg.Text(text='Настройки темы')],
             [sg.Listbox(sg.theme_list(), size=(25, 16), enable_events=True, key='-THEME-')],
-            # [sg.Checkbox(text='Автосохранение файла', default=False, key='-AUTOSAVE-')],
         ]
 
         layout = [
@@ -91,13 +72,6 @@ class MainWindow:
                 [sg.Tab(title='Main', layout=main_layout)],
                 [sg.Tab(title='Settings', layout=settings_layout)],
             ], expand_x=True, expand_y=True)],
-            # [sg.Button(
-            #     button_text='Настройки',
-            #     key='-SETTINGS-',
-            #     enable_events=True,
-            #     size=(10, 2),
-            #     pad=((1, 0), (280, 0)),
-            # )],
         ]
 
         self.window = sg.Window(
@@ -189,6 +163,8 @@ class FileViewWindow:
 
 
 class SettingsWindow:
+    """Moves the user to settings window"""
+
     def __init__(self):
         layout = [
             [sg.Listbox(sg.theme_list(), size=(15, 5), select_mode=True)],
